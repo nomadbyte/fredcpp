@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<error code="400" message="Bad Request.  The value for variable api_key is not a 32 character alpha-numeric lower-case string.  Read http://api.stlouisfed.org/api_key.html for more information." />

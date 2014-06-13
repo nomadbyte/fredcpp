@@ -1,0 +1,43 @@
+project(fredcpp-examples C CXX)
+
+if (WITH_CURL AND CURL_FOUND)
+  set(FREDCPP_PUBLIC_INCLUDE_DIRS
+    ${FREDCPP_PUBLIC_INCLUDE_DIRS}
+    ${CURL_INCLUDE_DIRS}
+  )
+
+  set(FREDCPP_LINK_LIBRARIES
+    ${FREDCPP_LINK_LIBRARIES}
+    ${CURL_LIBRARIES}
+  )
+endif (WITH_CURL AND CURL_FOUND)
+
+if (WITH_PUGIXML)
+  set(FREDCPP_PUBLIC_INCLUDE_DIRS
+    ${FREDCPP_PUBLIC_INCLUDE_DIRS}
+    ${PUGIXML_INCLUDE_DIRS}
+  )
+endif (WITH_PUGIXML)
+
+if (WITH_SIMPLELOGGER)
+  set(FREDCPP_PUBLIC_INCLUDE_DIRS
+    ${FREDCPP_PUBLIC_INCLUDE_DIRS}
+    ${SIMPLELOGGER_INCLUDE_DIRS}
+  )
+endif (WITH_SIMPLELOGGER)
+
+
+include_directories(
+  ${FREDCPP_PUBLIC_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}
+)
+
+
+add_executable(example1 example1.cpp)
+target_link_libraries(example1 ${FREDCPP_STATIC_LIBRARY} ${FREDCPP_LINK_LIBRARIES})
+
+add_executable(example2 example2.cpp)
+target_link_libraries(example2 ${FREDCPP_STATIC_LIBRARY} ${FREDCPP_LINK_LIBRARIES})
+
+add_executable(example3 example3.cpp)
+target_link_libraries(example3 ${FREDCPP_STATIC_LIBRARY} ${FREDCPP_LINK_LIBRARIES})

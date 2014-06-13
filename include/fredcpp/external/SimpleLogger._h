@@ -1,0 +1,128 @@
+#ifndef FREDCPP_EXTERNAL_SIMPLELOGGER_H_
+#define FREDCPP_EXTERNAL_SIMPLELOGGER_H_
+
+#include <fredcpp/internal/Logger.h>
+
+#include <fstream>
+#include <map>
+
+
+namespace fredcpp {
+namespace external {
+
+class LogChannel {
+public:
+  LogChannel(internal::LogLevel::Level level = internal::LogLevel::LOG_NONE, std::ostream& os = std::cout);
+
+  void writeLine(const std::string& str);
+
+  bool enable();
+  bool disable();
+  void setOutput(std::ostream& os);
+  void setLevel(internal::LogLevel::Level level);
+
+  internal::LogLevel::Level getLevel() const;
+  bool enabled() const;
+
+private:
+  LogChannel(const LogChannel&);
+  LogChannel& operator= (const LogChannel&);
+
+  bool isNull() const;
+
+  std::ostream* osPtr_;
+  internal::LogLevel::Level level_;
+  bool enabled_;
+};
+
+//______________________________________________________________________________
+
+
+class LogFile {
+public:
+  LogFile();
+  LogFile(const std::string& path);
+  ~LogFile();
+
+  bool openNew(const std::string& path);
+  bool openForAppend(const std::string& path);
+  bool open(std::ios_base::openmode mode = std::ios::app);
+  void close();
+
+  std::ofstream& useStream();
+
+  const std::string& getPath() const;
+  bool isOpen() const;
+
+private:
+  std::string path_;
+  std::ofstream ofs_;
+};
+
+//______________________________________________________________________________
+
+
+class SimpleLogger : public internal::Logger {
+public:
+  typedef std::ostream& (*LogFormatter)(std::ostream& os, internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context);
+
+  ~SimpleLogger();
+
+  static SimpleLogger& getInstance();
+
+  void logMessage(internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context);
+
+  bool enableLevel(internal::LogLevel::Level level);
+  bool disableLevel(internal::LogLevel::Level level);
+  void setOutput(internal::LogLevel::Level level, std::ostream& os);
+  void setOutput(internal::LogLevel::Level level, const std::string& path);
+  void setFormatter(LogFormatter formatter);
+
+  bool levelEnabled(internal::LogLevel::Level level) const;
+
+  bool enableInfo();
+  bool enableWarn();
+  bool enableError();
+  bool enableFatal();
+  bool enableDebug();
+
+  bool disableInfo();
+  bool disableWarn();
+  bool disableError();
+  bool disableFatal();
+  bool disableDebug();
+
+
+private:
+  typedef std::map<internal::LogLevel::Level, LogChannel> LogChannelByLevelMap;
+  typedef std::map<internal::LogLevel::Level, LogFile> LogFileByLevelMap;
+  
+  SimpleLogger();
+
+  SimpleLogger(const SimpleLogger&);
+  SimpleLogger& operator= (const SimpleLogger&);
+
+  void setupChannel(internal::LogLevel::Level level);
+  LogChannel& useChannel(internal::LogLevel::Level level);
+  LogFile& useFile(internal::LogLevel::Level level);
+
+  std::ostream& formatMessage(std::ostream& os, internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context);
+
+  const LogChannel& getChannel(internal::LogLevel::Level level) const;
+  LogFile* findFile(const std::string& path);
+
+  bool requireValidLevel(internal::LogLevel::Level level) const;
+
+
+  LogChannelByLevelMap channels_;  
+  LogFileByLevelMap files_;
+  LogFormatter formatter_;
+  LogChannel nullChannel_;
+};
+
+std::ostream& defaultLogFormat(std::ostream& os, internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context);
+
+} // namespace external
+} // namespace fredcpp
+
+#endif // FREDCPP_EXTERNAL_SIMPLELOGGER_H_

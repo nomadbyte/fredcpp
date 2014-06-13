@@ -1,0 +1,364 @@
+
+#include <fredcpp/external/SimpleLogger.h>
+
+#include <cassert>
+
+#include <sstream>
+#include <string>
+
+#define DBGOUT
+#include "dbgout.h"
+
+
+namespace fredcpp {
+namespace external {
+
+LogChannel::LogChannel(internal::LogLevel::Level level, std::ostream& os)
+  : level_(level)
+  , osPtr_(&os) {
+  enable();
+}
+
+
+void LogChannel::writeLine(const std::string& str) {
+  if (enabled_) {
+    (*osPtr_) << str
+              << std::endl;
+  }
+}
+
+bool LogChannel::enable() {
+  bool wasEnabled(enabled_);
+  enabled_ = ( !isNull() );
+  return (wasEnabled);
+}
+
+bool LogChannel::disable() {
+  bool wasEnabled(enabled_);
+  enabled_ = false;
+  return (wasEnabled);
+}
+
+void LogChannel::setOutput(std::ostream& os) {
+  osPtr_ = &os;
+}
+
+bool LogChannel::enabled() const {
+  return (enabled_);
+}
+
+void LogChannel::setLevel(internal::LogLevel::Level level) {
+  level_ = level;
+}
+
+internal::LogLevel::Level LogChannel::getLevel() const {
+  return (level_);
+}
+
+bool LogChannel::isNull() const {
+  return (internal::LogLevel::LOG_NONE == level_);
+}
+
+//______________________________________________________________________________
+
+LogFile::LogFile() {
+}
+
+LogFile::LogFile(const std::string& path)
+  : path_(path) {
+}
+
+LogFile::~LogFile() {
+  close();
+}
+
+bool LogFile::openNew(const std::string& path) {
+  close();
+  path_ = path;
+  return (open(std::ios::trunc));
+}
+
+bool LogFile::openForAppend(const std::string& path) {
+  close();
+  path_ = path;
+  return (open(std::ios::app));
+}
+
+bool LogFile::open(std::ios_base::openmode mode) {
+  //requireValidPath
+  ofs_.open(path_.c_str(), mode);
+  return(ofs_.good());
+}
+
+void LogFile::close() {
+  if (ofs_.is_open()) {
+    ofs_.close();
+  }
+}
+
+std::ofstream& LogFile::useStream() {
+  return (ofs_);
+}
+
+const std::string& LogFile::getPath() const {
+  return (path_);
+}
+
+
+bool LogFile::isOpen() const {
+  return (ofs_.is_open());
+}
+
+
+//______________________________________________________________________________
+
+
+SimpleLogger::SimpleLogger() {
+  setupChannel(internal::LogLevel::LOG_INFO);
+  setupChannel(internal::LogLevel::LOG_WARN);
+  setupChannel(internal::LogLevel::LOG_ERROR);
+  setupChannel(internal::LogLevel::LOG_FATAL);
+  setupChannel(internal::LogLevel::LOG_DEBUG);
+
+  // defaults
+  nullChannel_.disable();
+  disableLevel(internal::LogLevel::LOG_DEBUG);
+  formatter_ = defaultLogFormat;
+}
+
+
+SimpleLogger::~SimpleLogger() {
+}
+
+SimpleLogger& SimpleLogger::getInstance() {
+  static SimpleLogger instance;
+  return (instance);
+}
+
+void SimpleLogger::logMessage(internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context) {
+  LogChannel& channel = useChannel(level);
+
+  if (!channel.enabled()) {
+    return;
+  }
+
+  std::ostringstream buf;
+  formatMessage(buf, channel.getLevel(), message, context);
+
+  channel.writeLine(buf.str());
+}
+
+bool SimpleLogger::enableLevel(internal::LogLevel::Level level) {
+  LogChannel& channel = useChannel(level);
+  return (channel.enable());
+}
+
+bool SimpleLogger::disableLevel(internal::LogLevel::Level level) {
+  LogChannel& channel = useChannel(level);
+  return (channel.disable());
+}
+
+void SimpleLogger::setOutput(internal::LogLevel::Level level, std::ostream& os) {
+  LogChannel& channel = useChannel(level);
+
+  channel.setOutput(os);
+}
+
+void SimpleLogger::setOutput(internal::LogLevel::Level level, const std::string& path) {
+  LogChannel& channel = useChannel(level);
+
+  // First check if path has already been opened and then use its stream
+  // otherwise open new file
+
+  LogFile* foundFilePtr = findFile(path);
+
+  if (foundFilePtr) {
+    LogFile& foundFile = *foundFilePtr;
+
+    channel.setOutput(foundFile.useStream());
+
+  } else {
+    LogFile& file = useFile(level);
+
+    file.openNew(path);
+    channel.setOutput(file.useStream());
+  }
+
+}
+
+void SimpleLogger::setFormatter(SimpleLogger::LogFormatter formatter) {
+  formatter_ = formatter;
+}
+
+
+bool SimpleLogger::levelEnabled(internal::LogLevel::Level level) const {
+  const LogChannel& channel = getChannel(level);
+  return (channel.enabled());
+}
+
+
+bool SimpleLogger::enableInfo() {
+  return (enableLevel(internal::LogLevel::LOG_INFO));
+}
+
+bool SimpleLogger::enableWarn() {
+  return (enableLevel(internal::LogLevel::LOG_WARN));
+}
+
+bool SimpleLogger::enableError() {
+  return (enableLevel(internal::LogLevel::LOG_ERROR));
+}
+
+bool SimpleLogger::enableFatal() {
+  return (enableLevel(internal::LogLevel::LOG_FATAL));
+}
+
+bool SimpleLogger::enableDebug() {
+  return (enableLevel(internal::LogLevel::LOG_DEBUG));
+}
+
+bool SimpleLogger::disableInfo() {
+  return (disableLevel(internal::LogLevel::LOG_INFO));
+}
+
+bool SimpleLogger::disableWarn() {
+  return (disableLevel(internal::LogLevel::LOG_WARN));
+}
+
+bool SimpleLogger::disableError() {
+  return (disableLevel(internal::LogLevel::LOG_ERROR));
+}
+
+bool SimpleLogger::disableFatal() {
+  return (disableLevel(internal::LogLevel::LOG_FATAL));
+}
+
+bool SimpleLogger::disableDebug() {
+  return (disableLevel(internal::LogLevel::LOG_DEBUG));
+}
+
+
+std::ostream& SimpleLogger::formatMessage(std::ostream& os, internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context) {
+
+  if (formatter_ == NULL) {
+    os << message;
+  } else {
+    formatter_(os, level, message, context);
+  }
+
+  return (os);
+}
+
+
+void SimpleLogger::setupChannel(internal::LogLevel::Level level) {
+  if (!requireValidLevel(level)) {
+    assert( requireValidLevel(level) && "Valid log-level expected");
+    return;  // error
+  }
+
+  LogChannel& channel(useChannel(level));
+  channel.setLevel(level);
+  channel.enable();
+}
+
+
+const LogChannel& SimpleLogger::getChannel(internal::LogLevel::Level level) const {
+  if (!requireValidLevel(level)) {
+    assert( requireValidLevel(level) && "Valid log-level expected");
+    return (nullChannel_);  // error
+  }
+
+  LogChannelByLevelMap::const_iterator itFound = channels_.find(level);
+  assert(itFound != channels_.end() && "Valid channel setup expected");
+
+  const LogChannel& channel = itFound->second;
+  return (channel);
+}
+
+LogChannel& SimpleLogger::useChannel(internal::LogLevel::Level level) {
+  if (!requireValidLevel(level)) {
+    assert( requireValidLevel(level) && "Valid log-level expected");
+    return (nullChannel_);  // error
+  }
+
+  LogChannel& channel = channels_[level];
+  return (channel);
+}
+
+
+LogFile& SimpleLogger::useFile(internal::LogLevel::Level level) {
+  const LogChannel& channel = getChannel(level);
+  LogFile& file(files_[level]);
+  return (file);
+}
+
+LogFile* SimpleLogger::findFile(const std::string& path) {
+  LogFile* foundFile(NULL);
+
+  for (LogFileByLevelMap::iterator it = files_.begin();
+       it != files_.end();
+       ++it) {
+    LogFile& file = it->second;
+
+    // case-sensitive match
+    if (file.getPath() == path) {
+      foundFile = &file;
+      break;
+    }
+  }
+
+  return (foundFile);
+}
+
+
+bool SimpleLogger::requireValidLevel(internal::LogLevel::Level level) const {
+  return (internal::LogLevel::valid(level));
+}
+
+//______________________________________________________________________________
+
+
+std::ostream& defaultLogFormat(std::ostream& os, internal::LogLevel::Level level, const std::string& message, const internal::LogContext& context) {
+  bool requireValidOutput(os.good());
+  if (!requireValidOutput) {
+    assert(requireValidOutput && "Valid output stream expected");
+    return (os);
+  }
+
+  switch (level) {
+  case internal::LogLevel::LOG_INFO:
+    os << "I"
+       << "|" << message;
+    break;
+
+  case internal::LogLevel::LOG_WARN:
+    os << "W"
+       << "|" << message;
+    break;
+
+  case internal::LogLevel::LOG_ERROR:
+    os << "E"
+       << "|" << message;
+    break;
+
+  case internal::LogLevel::LOG_FATAL:
+    os << "F"
+       << ":[" << context.file << ":" << context.line  << " (" << context.func << ")]"
+       << "|" << message;
+    break;
+
+  case internal::LogLevel::LOG_DEBUG:
+    os << "DBG"
+       << ":[" << context.file << ":" << context.line  << " (" << context.func << ")]"
+       << "|" << message;
+    break;
+
+  default:
+    assert(false && "Valid log-level expected");
+  }
+
+  return (os);
+}
+
+} // namespace external
+} // namespace fredcpp

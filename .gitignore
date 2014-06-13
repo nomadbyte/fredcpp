@@ -1,0 +1,4 @@
+build/*
+_FOSSIL_
+.fslckout
+api.key

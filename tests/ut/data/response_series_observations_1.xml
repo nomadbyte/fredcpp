@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<observations realtime_start="2014-05-02" realtime_end="2014-05-02" observation_start="2014-03-01" observation_end="9999-12-31" units="lin" output_type="1" file_type="xml" order_by="observation_date" sort_order="asc" count="40" offset="0" limit="10">
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-03" value="1.3763"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-04" value="1.3731"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-05" value="1.3734"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-06" value="1.3848"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-07" value="1.3868"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-10" value="1.3880"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-11" value="1.3867"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-12" value="1.3904"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-13" value="1.3927"/>
+  <observation realtime_start="2014-05-02" realtime_end="2014-05-02" date="2014-03-14" value="1.3924"/>
+</observations>

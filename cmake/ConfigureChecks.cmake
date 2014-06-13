@@ -1,0 +1,10 @@
+include(CheckIncludeFile)
+include(CheckSymbolExists)
+include(CheckFunctionExists)
+include(CheckLibraryExists)
+include(CheckTypeSize)
+include(CheckCXXSourceCompiles)
+include(TestBigEndian)
+
+set(PACKAGE ${APPLICATION_NAME})
+set(VERSION ${APPLICATION_VERSION})
