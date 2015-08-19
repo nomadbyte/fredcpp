@@ -74,6 +74,10 @@ std::ostream& operator<< (std::ostream& os, const ApiEntity& object) {
 
 //______________________________________________________________________________
 
+ApiResponse::ApiResponse() {
+  clear();
+}
+
 bool ApiResponse::good() const {
   return (!error);
 }

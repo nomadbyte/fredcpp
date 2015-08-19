@@ -90,6 +90,8 @@ struct ApiResponse {
   ApiEntityVector entities;
   ApiError error;
 
+  ApiResponse();
+
   /// Predicate to test whether error is set.
   bool good() const;
 

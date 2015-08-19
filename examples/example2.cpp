@@ -8,7 +8,7 @@
 // The retrieved FRED data is written to a text file named `<series-id>.txt`,
 // where series-id can also be specified from the command-line.
 //
-// The output file has format __similar__ to FRED series text-files available 
+// The output file has format __similar__ to FRED series text-files available
 // directly from FRED, but used here only for demonstration purposes.
 //
 // @note Expects FRED API key defined in `FRED_API_KEY` enviroment variable.

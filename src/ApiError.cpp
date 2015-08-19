@@ -31,6 +31,11 @@
 
 namespace fredcpp {
 
+ApiError::ApiError() {
+  clear();
+}
+
+
 ApiError::~ApiError() {
 }
 
@@ -61,8 +66,7 @@ void ApiError::clear() {
 
 //______________________________________________________________________________
 
-ErrorHttpRequestFailed::ErrorHttpRequestFailed(const ApiRequest& request, const internal::HttpRequest& httpRequest, const internal::HttpResponse& httpResponse)
-  : ApiError() {
+ErrorHttpRequestFailed::ErrorHttpRequestFailed(const ApiRequest& request, const internal::HttpRequest& httpRequest, const internal::HttpResponse& httpResponse) {
   status = FREDCPP_FAIL_HTTP;
 
   std::ostringstream buf;
@@ -81,8 +85,7 @@ ErrorHttpRequestFailed::ErrorHttpRequestFailed(const ApiRequest& request, const 
   code = buf.str();
 }
 
-ErrorXmlParseFailed::ErrorXmlParseFailed(const ApiRequest& request, const std::istringstream& xmlContent)
-  : ApiError() {
+ErrorXmlParseFailed::ErrorXmlParseFailed(const ApiRequest& request, const std::istringstream& xmlContent) {
   status = FREDCPP_FAIL_PARSE;
 
   std::ostringstream buf;
@@ -96,8 +99,7 @@ ErrorXmlParseFailed::ErrorXmlParseFailed(const ApiRequest& request, const std::i
   message = buf.str();
 }
 
-FatalInternalError::FatalInternalError(const std::string& reason)
-  : ApiError() {
+FatalInternalError::FatalInternalError(const std::string& reason) {
   status = FREDCPP_INTERNAL_ERROR;
 
   std::ostringstream buf;

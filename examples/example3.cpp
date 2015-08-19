@@ -47,7 +47,7 @@ std::size_t addCategoryToTree(fredcpp::Api& api, ChildrenByIdMap& tree, const st
 
 int main(int argc, char* argv[], char* envp[]) {
 
-  std::string rootCategory(DEFAULT_CATEGORY); 
+  std::string rootCategory(DEFAULT_CATEGORY);
   std::string outputFile(DEFAULT_OUTPUT_FILE);
 
   if (argc > 1) {

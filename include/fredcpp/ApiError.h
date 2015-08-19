@@ -65,6 +65,7 @@ struct ApiError {
   ApiStatus status;
 
 
+  ApiError();
   virtual ~ApiError();
 
   /// Predicate to support !error test.
