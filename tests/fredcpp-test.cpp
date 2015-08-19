@@ -1,7 +1,7 @@
 /*
  *  This file is part of fredcpp library
  *
- *  Copyright (c) 2012 - 2014, Artur Shepilko, <fredcpp@nomadbyte.com>.
+ *  Copyright (c) 2012 - 2015, Artur Shepilko, <fredcpp@nomadbyte.com>.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@
 
 
 #define FREDCPP_TEST_APIKEY_FILE "data/api.key"
+#define FREDCPP_TEST_CACERT_FILE "data/cacert.pem"
 
 
 // Test Fixture
@@ -50,6 +51,9 @@ protected:
       setApiKey();
     }
 
+    setCACertFile();
+    fredcpp::external::CurlHttpClient::getInstance().withCACertFile(CACertFile);
+
     api.withKey(apiKey)
        .withExecutor(fredcpp::external::CurlHttpClient::getInstance())
        .withParser(fredcpp::external::PugiXmlParser::getInstance())
@@ -60,9 +64,9 @@ protected:
   }
 
   void setApiKey() {
-    std::string apiKeyFile(fredcpp::test::harmonizePath(FREDCPP_TEST_APIKEY_FILE));
+    std::string path(fredcpp::test::harmonizePath(FREDCPP_TEST_APIKEY_FILE));
 
-    std::ifstream ifs(apiKeyFile.c_str());
+    std::ifstream ifs(path.c_str());
 
     assert(ifs && "Valid api.key file expected");
 
@@ -71,14 +75,28 @@ protected:
     }
   }
 
+  void setCACertFile() {
+    std::string path(fredcpp::test::harmonizePath(FREDCPP_TEST_CACERT_FILE));
+
+    std::ifstream ifs(path.c_str());
+
+    assert(ifs && "Valid cacert.pem file expected");
+
+    if (ifs) {
+      CACertFile.assign(path);
+    }
+  }
+
 
   static std::string apiKey;
+  static std::string CACertFile;
 
   fredcpp::Api api;
   fredcpp::ApiResponse response;
 };
 
 std::string FredcppTest::apiKey;
+std::string FredcppTest::CACertFile;
 
 //______________________________________________________________________________
 

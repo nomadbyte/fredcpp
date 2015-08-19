@@ -72,13 +72,15 @@ target_link_libraries(run-gtest-at
 )
 
 
-## copy test data and API key
+## copy test data, API key, and CA cert file
 
 add_custom_target(testdata-at ALL
   COMMAND "${CMAKE_COMMAND}" -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:run-gtest-at>/data
   COMMAND "${CMAKE_COMMAND}" -E copy_if_different
     ${FREDCPP_API_KEY_FILE} $<TARGET_FILE_DIR:run-gtest-at>/data
+  COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+    ${FREDCPP_CACERT_FILE} $<TARGET_FILE_DIR:run-gtest-at>/data
 )
 
 
@@ -87,7 +89,7 @@ set(FREDCPP_GTEST_AT_OPTIONS "--gtest_filter=-*.ErrorWhenRealtimeEndAfter*"
 )
 
 add_test(NAME acceptanceTests
-  COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:run-gtest-at>" 
+  COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:run-gtest-at>"
     "$<TARGET_FILE:run-gtest-at>" ${FREDCPP_GTEST_AT_OPTIONS}
 )
 

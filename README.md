@@ -33,6 +33,9 @@ under the terms of the @ref fredcpplicense | [MIT License][fredcpplicense].
 [fredcpplicense]: LICENSE.md "MIT License"
 [fredcppchangelog]: CHANGELOG.md "fredcpp ChangeLog"
 
+[curlcabundle]: http://curl.haxx.se/docs/caextract.html "cURL CA Certificate bundle"
+
+
 Features
 --------
 
@@ -49,8 +52,10 @@ C++ context.
 - built-in HTTP request execution, XML response parsing, and central logging
   facilities
 - limited external dependencies (effectively only for HTTP handling)
-- __stand-alone ready__ with the supplied implementation for binding with cURL-library
-- flexible integration with external HTTP stack, XML parser, and logging framework alternatives
+- __stand-alone ready__ with the supplied implementation for binding with
+  cURL-library
+- flexible integration with external HTTP stack, XML parser, and logging framework
+  alternatives
 
 Additionally, the following concerns are kept in focus:
 
@@ -72,7 +77,22 @@ At-a-glance
 A shortcut to get started with `fredcpp`, assuming you are familiar with
 `CMake`, have a C++ compiler, cURL (`libcurl`) library and headers installed.
 
-> __NOTE__: On Windows generate with `"NMake Makefiles"` for MSVC `NMAKE`.
+> __HTTPS-NOTE__: Starting 08/18/2015, FRED API requires HTTPS access for added
+> security. `fredcpp` has been updated to generate HTTPS requests. However, `fredcpp`
+> users need to make sure that HTTP executor used with `fredcpp` has been
+> properly configured to handle HTTPS requests. CA Certificate used by FRED API
+> must be available for verification in the user's environment.
+>
+> To configure `CurlHttpClient` supplied with `fredcpp`, download the CA Certificate
+> bundle `cacert.pem` from [cURL CA Extract page][curlcabundle] to the
+> `fredcpp` root -- this is needed to run acceptance tests.
+> For use once installed, set the evironment variable `CURL_CA_BUNDLE` to point to 
+> the downloaded file. Alternatively, call `CurlHttpClient::withCACertFile(path)`
+> method to configure this explicitly from the user code, by default the file is
+> expected in the running process' work directory.
+
+> __NOTE__: On Windows generate `CMake` files with `"NMake Makefiles"` for MSVC
+> `NMAKE`.
 
 From `fredcpp` source directory:
 

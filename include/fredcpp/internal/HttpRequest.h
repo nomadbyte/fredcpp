@@ -65,6 +65,7 @@ public:
   const std::string& getURI() const;
   Method getMethod() const;
 
+  bool isHttps() const;
   virtual std::ostream& print(std::ostream& os) const;
 
 private:

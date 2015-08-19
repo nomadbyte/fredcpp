@@ -1,7 +1,7 @@
 /*
  *  This file is part of fredcpp library
  *
- *  Copyright (c) 2012 - 2014, Artur Shepilko, <fredcpp@nomadbyte.com>.
+ *  Copyright (c) 2012 - 2015, Artur Shepilko, <fredcpp@nomadbyte.com>.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@ public:
   CurlHttpClient& withTimeout(unsigned secs);
   CurlHttpClient& withRetryWait(unsigned secs);
   CurlHttpClient& withRetryCount(unsigned count);
+  CurlHttpClient& withCACertFile(const std::string& path);
   /// @}
 
 
@@ -77,6 +78,8 @@ public:
   std::string getErrorMsg() const;
   /// @}
 
+  const std::string& getCACertFile() const;
+
 
 private:
   CurlHttpClient();
@@ -90,9 +93,13 @@ private:
   static const unsigned DEFAULT_RETRY_WAIT_SECS;
   static const unsigned DEFAULT_RETRY_MAX_COUNT;
 
+  static const std::string DEFAULT_CA_CERT_FILE;
+  static const std::string ENV_CA_CERT_FILE;
+
   long timeoutSecs_;
   unsigned retryWaitSecs_;
   unsigned retryMaxCount_;
+  std::string CACertFile_;
 
   WriteDataCallback writeDataCallback_;
   CURLcode CURLStatus_;

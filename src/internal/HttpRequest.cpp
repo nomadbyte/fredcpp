@@ -23,6 +23,8 @@
  */
 
 #include <fredcpp/internal/HttpRequest.h>
+#include <string>
+#include <algorithm>
 
 
 namespace fredcpp {
@@ -63,6 +65,25 @@ const std::string& HttpRequest::getURI() const {
 
 HttpRequest::Method HttpRequest::getMethod() const {
   return (method_);
+}
+
+bool HttpRequest::isHttps() const {
+    const std::string HTTPS("https:");
+    const std::string WHITESPACE(" \t\r\n");
+    bool result(false);
+
+    std::size_t pos = URI_.find_first_not_of(WHITESPACE);
+    if ( std::string::npos == pos ) {
+        // URI empty or whitespace only
+        return (result);
+    }
+
+    std::string buf = URI_.substr(pos, HTTPS.size());
+    std::transform(buf.begin(), buf.end(), buf.begin(), ::tolower);
+
+    result = (buf.compare(HTTPS) == 0);
+
+    return (result);
 }
 
 std::ostream& HttpRequest::print(std::ostream& os) const {

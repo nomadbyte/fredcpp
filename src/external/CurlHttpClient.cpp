@@ -1,7 +1,7 @@
 /*
  *  This file is part of fredcpp library
  *
- *  Copyright (c) 2012 - 2014, Artur Shepilko, <fredcpp@nomadbyte.com>.
+ *  Copyright (c) 2012 - 2015, Artur Shepilko, <fredcpp@nomadbyte.com>.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,9 @@ const unsigned CurlHttpClient::DEFAULT_TIMEOUT_SECS(15);
 const unsigned CurlHttpClient::DEFAULT_RETRY_WAIT_SECS(5);
 const unsigned CurlHttpClient::DEFAULT_RETRY_MAX_COUNT(3);
 
+const std::string CurlHttpClient::DEFAULT_CA_CERT_FILE("cacert.pem");
+const std::string CurlHttpClient::ENV_CA_CERT_FILE("CURL_CA_BUNDLE");
+
 
 CurlHttpClient::CurlHttpClient()
   : internal::HttpRequestExecutor("libcurl-agent/1.0")
@@ -49,13 +52,27 @@ CurlHttpClient::CurlHttpClient()
   , CURLStatus_(CURLE_FAILED_INIT)
   , writeDataCallback_(writeData) {
 
-	curl_global_init(CURL_GLOBAL_ALL);
+  curl_global_init(CURL_GLOBAL_ALL);
   errorBuf_[0] = '\0';
+
+  // Initialize CACertFile
+  CACertFile_.assign(DEFAULT_CA_CERT_FILE);
+
+  {
+    std::ifstream ifs(CACertFile_.c_str());
+
+    if (!ifs) CACertFile_.clear();
+  }
+
+  if (CACertFile_.empty()) {
+    const char* val = std::getenv(ENV_CA_CERT_FILE.c_str());
+    if (val != NULL) CACertFile_.assign(val);
+  }
 }
 
 
 CurlHttpClient::~CurlHttpClient() {
-	curl_global_cleanup();
+  curl_global_cleanup();
 }
 
 
@@ -83,8 +100,14 @@ CurlHttpClient& CurlHttpClient::withRetryCount(unsigned count) {
 }
 
 
+CurlHttpClient& CurlHttpClient::withCACertFile(const std::string& path) {
+  CACertFile_ = path;
+  return (*this);
+}
+
+
 bool CurlHttpClient::execute(const internal::HttpRequest& request, internal::HttpResponse& response) {
-	CURLStatus_ = CURLE_FAILED_INIT;
+  CURLStatus_ = CURLE_FAILED_INIT;
   errorBuf_[0] = '\0';
 
   bool retry(false);
@@ -92,7 +115,7 @@ bool CurlHttpClient::execute(const internal::HttpRequest& request, internal::Htt
 
   response.clear();
 
-	CURL* curl = curl_easy_init();
+  CURL* curl = curl_easy_init();
 
   if (NULL == curl) {
     return (internal::HttpResponse::HTTP_OK == response.getHttpStatus());
@@ -102,6 +125,11 @@ bool CurlHttpClient::execute(const internal::HttpRequest& request, internal::Htt
 
   FREDCPP_LOG_DEBUG("CURL:URI:" << URI);
 
+  if (!CACertFile_.empty()) {
+    std::ifstream ifs(CACertFile_.c_str());
+    FREDCPP_LOG_DEBUG("CURL:CACertFile:" << CACertFile_ << " found:" << ifs.good());
+  }
+
   if (CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_USERAGENT, userAgent_.c_str()))
       && CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeDataCallback_))
       && CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L))
@@ -110,6 +138,8 @@ bool CurlHttpClient::execute(const internal::HttpRequest& request, internal::Htt
       && CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeoutSecs_))
       && CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_URL, URI.c_str()))
       && CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errorBuf_))
+      && (!request.isHttps()
+          || CURLE_OK == (CURLStatus_ = curl_easy_setopt(curl, CURLOPT_CAINFO, CACertFile_.c_str())))
       ) {
 
     do {
@@ -167,7 +197,7 @@ bool CurlHttpClient::execute(const internal::HttpRequest& request, internal::Htt
 std::string CurlHttpClient::encodeURI(const std::string& URI) {
   std::string result;
 
-	CURL* curl = curl_easy_init();
+  CURL* curl = curl_easy_init();
 
   char* buf = curl_easy_escape(curl, URI.c_str(), URI.size());
   if (NULL == buf ) {
@@ -212,6 +242,11 @@ std::string CurlHttpClient::getErrorMsg() const {
 }
 
 
+const std::string& CurlHttpClient::getCACertFile() const {
+  return (CACertFile_);
+}
+
+
 internal::HttpResponse::HttpStatus CurlHttpClient::httpStatusFromCode(long code) {
   internal::HttpResponse::HttpStatus status(internal::HttpResponse::HTTP_UNKNOWN);
 
@@ -228,10 +263,10 @@ internal::HttpResponse::HttpStatus CurlHttpClient::httpStatusFromCode(long code)
 // callback function writes data to a std::ostream
 size_t CurlHttpClient::writeData(void* buf, size_t size, size_t nmemb, void* userp)
 {
-	if (userp == NULL) {
+  if (userp == NULL) {
     // error
     return 0;
-	}
+  }
 
   std::ostream& os = *static_cast<std::ostream*>(userp);
   std::streamsize len = size * nmemb;

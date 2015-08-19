@@ -1,7 +1,7 @@
 /*
  *  This file is part of fredcpp library
  *
- *  Copyright (c) 2012 - 2014, Artur Shepilko, <fredcpp@nomadbyte.com>.
+ *  Copyright (c) 2012 - 2015, Artur Shepilko, <fredcpp@nomadbyte.com>.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -63,3 +63,30 @@ TEST(internalHttpRequest, AcceptsQueryParams) {
 
 }
 
+TEST(internalHttpRequest, DetectsHttpsURI) {
+  FREDCPP_TESTCASE("Detects HTTPS URI");
+  using namespace fredcpp::internal;
+
+  HttpRequest request;
+
+  request.withURI("https://server.net");
+  ASSERT_TRUE(request.isHttps());
+
+  request.withURI("http://server.net");
+  ASSERT_FALSE(request.isHttps());
+
+  request.withURI("");
+  ASSERT_FALSE(request.isHttps());
+
+  request.withURI("invalid-uri");
+  ASSERT_FALSE(request.isHttps());
+
+  request.withURI("hTtpS:");
+  ASSERT_TRUE(request.isHttps());
+
+  request.withURI("  https:");
+  ASSERT_TRUE(request.isHttps());
+
+  request.withURI("\t\r\nhttps:");
+  ASSERT_TRUE(request.isHttps());
+}

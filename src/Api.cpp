@@ -1,7 +1,7 @@
 /*
  *  This file is part of fredcpp library
  *
- *  Copyright (c) 2012 - 2014, Artur Shepilko, <fredcpp@nomadbyte.com>.
+ *  Copyright (c) 2012 - 2015, Artur Shepilko, <fredcpp@nomadbyte.com>.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@
 
 namespace fredcpp {
 
-const std::string Api::DEFAULT_BASE_URI("http://api.stlouisfed.org/fred");
+const std::string Api::DEFAULT_BASE_URI("https://api.stlouisfed.org/fred");
 const std::string Api::FRED_PARAM_API_KEY("api_key");
 const std::string Api::FRED_PARAM_FILE_TYPE("file_type");
 
