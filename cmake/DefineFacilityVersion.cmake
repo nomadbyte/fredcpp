@@ -15,7 +15,7 @@ set(fredcpp_VERSION_MINOR 7
   CACHE INTERNAL "${fredcpp_FACILITY} minor release version"
 )
 
-set(fredcpp_VERSION_PATCH 0
+set(fredcpp_VERSION_PATCH 1
   CACHE INTERNAL "${fredcpp_FACILITY} patch release version"
 )
 
