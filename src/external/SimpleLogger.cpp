@@ -34,8 +34,8 @@ namespace fredcpp {
 namespace external {
 
 LogChannel::LogChannel(internal::LogLevel::Level level, std::ostream& os)
-  : level_(level)
-  , osPtr_(&os) {
+  : osPtr_(&os)
+  , level_(level) {
   enable();
 }
 
@@ -205,7 +205,7 @@ void SimpleLogger::setOutput(internal::LogLevel::Level level, std::ostream& os) 
   LogChannel& channel = useChannel(level);
   LogFile& file = useFile(level);
 
-  if (file.useStream() != os ) {
+  if (&(file.useStream()) != &os ) {
     file.close();
   }
 
@@ -214,8 +214,6 @@ void SimpleLogger::setOutput(internal::LogLevel::Level level, std::ostream& os) 
 
 
 void SimpleLogger::setOutput(internal::LogLevel::Level level, const std::string& path) {
-  LogChannel& channel = useChannel(level);
-
   // First check if path has already been opened and then use its stream
   // otherwise open new file
 
@@ -363,7 +361,6 @@ LogChannel& SimpleLogger::useChannel(internal::LogLevel::Level level) {
 
 
 LogFile& SimpleLogger::useFile(internal::LogLevel::Level level) {
-  const LogChannel& channel(getChannel(level));
   LogFile& file(files_[static_cast<std::size_t>(level)]);
   return (file);
 }

@@ -3,6 +3,8 @@ fredcpp ChangeLog  {#fredcppchangelog}
 
 ## 0.8.0
 
+- Clean up compile warnings
+
 
 ## 0.7.0 - 2015-08-19
 
