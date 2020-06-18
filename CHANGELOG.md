@@ -1,7 +1,7 @@
 fredcpp ChangeLog  {#fredcppchangelog}
 =================
 
-## 0.7.1
+## 0.7.1 - 2020-06-18
 
 - Clean up compile warnings
 
